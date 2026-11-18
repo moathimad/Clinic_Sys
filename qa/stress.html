@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>CareSlot booking stress preview</title><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#main">Skip to content</a><div id="app"></div><div id="chat-root"></div><dialog id="modal" aria-label="Appointment details"></dialog><div id="toast" class="toast" role="status" aria-live="polite"></div>
+<nav aria-label="Test data" style="position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:110;background:#eee;padding:8px;border-radius:8px;display:flex;gap:12px;font:13px system-ui;white-space:nowrap">
+<a href="qa/stress.html?data=demo">Demo data</a><a href="qa/stress.html?data=worst">Worst case</a><a href="qa/stress.html?data=arabic">Arabic</a><a href="qa/stress.html?data=empty">Empty</a></nav>
+<script type="module">
+// Isolated preview: never reads or writes the visitor's actual booking storage.
+const storage=()=>{const data=new Map();return {getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,String(v)),removeItem:k=>data.delete(k),clear:()=>data.clear()}};
+Object.defineProperty(window,'localStorage',{value:storage()});
+Object.defineProperty(window,'sessionStorage',{value:storage()});
+const {seedState,writeState}=await import('../data.js');
+const state=seedState();const mode=new URLSearchParams(location.search).get('data')||'demo';
+const b=state.bookings[0];
+if(mode==='worst'){
+ b.name='Aleksandra Wiśniewska-Kowalczyk Montgomery';
+ b.note='Please use the accessible entrance and contact my accompanying family member when the appointment is ready.';
+ state.doctors[0].name='Dr. Bartholomew Fitzgerald-Montgomery';
+ b.phone='+962791234567';
+} else if(mode==='arabic'){
+ b.name='عبد الرحمن محمد عبد الله الخطيب الحسيني';
+ state.doctors[0].ar='د. عبد الرحمن محمد عبد الله الحسيني';
+ localStorage.setItem('careslot.language','ar');
+} else if(mode==='empty') state.bookings=[];
+writeState(state);
+sessionStorage.setItem('careslot.draft',JSON.stringify({specialty:'dermatology',date:b.date,time:'',preferredId:'any',name:'',phone:'',note:''}));
+sessionStorage.setItem('careslot.verified',JSON.stringify({phone:b.phone,expires:Date.now()+900000}));
+location.hash='/booking/'+b.id;
+await import('../app.js');
+</script></body></html>

@@ -1,0 +1,25 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+# Generated QA artifacts
+audit/*.json
+audit/*.png
+audit/*-result.txt
+audit/*-results.txt
+audit/workflow/
+audit/workflow.mjs
+audit/probe.py
+qa/*.png
+__pycache__/
