@@ -100,7 +100,10 @@ const patientName = (b) => {
 };
 const person = (d, subtitle = "") =>
   `<div class="person"><span class="avatar">${escape(d?.initials || "?")}</span><div><strong>${escape(doctorName(d))}</strong>${subtitle ? `<p>${escape(subtitle)}</p>` : ""}</div></div>`;
-let session = getSession("careslot.auth");
+const portal = document.documentElement.dataset.portal;
+const authKey = "careslot.auth." + portal;
+let session = portal ? getSession(authKey) : null;
+if (session?.role !== portal) session = null;
 let verified = getSession("careslot.verified");
 const defaultDraft = {
   specialty: "dermatology",
@@ -236,8 +239,8 @@ function landing() {
     (s) =>
       `<button class="service-card" data-action="service-book" data-specialty="${s.id}"><h3>${s[lang]}</h3><p>${lang === "ar" ? s.arabic : s.description}</p><span class="service-booking-link">${t("View appointments", "عرض المواعيد")}<span aria-hidden="true">${t("↗", "↖")}</span></span></button>`,
   ).join("");
-  return `<header class="site-header">${brand()}<nav class="nav-links" aria-label="${t("Main navigation", "التنقل الرئيسي")}"><a href="#how">${t("How it works", "كيف يعمل")}</a><a href="#doctors">${t("Doctors", "الأطباء")}</a><a href="#services">${t("Services", "التخصصات")}</a><a href="#about">${t("About", "عن العيادة")}</a><a href="#visit">${t("Visit us", "موقعنا")}</a></nav><div class="nav-actions">${languageButton()}<a class="text-button staff-link" href="#/login">${t("Staff sign in", "دخول الموظفين")}</a><a class="btn pill" href="#/book/specialty">${t("Book a visit", "احجز زيارة")}</a><button class="menu-toggle" data-action="menu" aria-expanded="false" aria-controls="mobile-navigation">${t("Menu", "القائمة")}</button></div></header>
-  <nav class="mobile-menu" id="mobile-navigation" aria-label="${t("Mobile navigation", "قائمة الهاتف")}"><a href="#how">${t("How it works", "كيف يعمل")}</a><a href="#doctors">${t("Doctors", "الأطباء")}</a><a href="#services">${t("Services", "التخصصات")}</a><a href="#about">${t("About", "عن العيادة")}</a><a href="#visit">${t("Visit us", "موقعنا")}</a><a href="#/login">${t("Staff sign in", "دخول الموظفين")}</a></nav>
+  return `<header class="site-header">${brand()}<nav class="nav-links" aria-label="${t("Main navigation", "التنقل الرئيسي")}"><a href="#how">${t("How it works", "كيف يعمل")}</a><a href="#doctors">${t("Doctors", "الأطباء")}</a><a href="#services">${t("Services", "التخصصات")}</a><a href="#about">${t("About", "عن العيادة")}</a><a href="#visit">${t("Visit us", "موقعنا")}</a></nav><div class="nav-actions">${languageButton()}<a class="btn pill" href="#/book/specialty">${t("Book a visit", "احجز زيارة")}</a><button class="menu-toggle" data-action="menu" aria-expanded="false" aria-controls="mobile-navigation">${t("Menu", "القائمة")}</button></div></header>
+  <nav class="mobile-menu" id="mobile-navigation" aria-label="${t("Mobile navigation", "قائمة الهاتف")}"><a href="#how">${t("How it works", "كيف يعمل")}</a><a href="#doctors">${t("Doctors", "الأطباء")}</a><a href="#services">${t("Services", "التخصصات")}</a><a href="#about">${t("About", "عن العيادة")}</a><a href="#visit">${t("Visit us", "موقعنا")}</a></nav>
   <main id="main"><section class="hero"><div class="hero-copy"><span class="mobile-eyebrow">${t("Online booking · no account needed", "حجز عبر الإنترنت · دون إنشاء حساب")}</span><h1>${t("Book your next visit with ease.", "احجز زيارتك القادمة بسهولة.")}</h1><p class="hero-description">${t("Choose a date and time, enter your details, and verify your phone. The clinic assigns a doctor and confirms your request by message.", "اختر التاريخ والوقت، وأدخل بياناتك وتحقق من هاتفك. ستعيّن العيادة الطبيب وتؤكد طلبك برسالة.")}</p><div class="booking-actions"><div class="actions"><a class="btn pill" href="#/book/specialty">${t("Book a visit", "احجز زيارة")}</a><a class="btn pill outline" href="#how">${t("How it works", "كيف يعمل")}</a></div><div class="returning-link"><img src="assets/calendar.svg" width="16" height="16" alt=""><span>${t("Already booked?", "لديك حجز؟")}</span><a href="#/lookup">${t("Find my booking →", "العثور على حجزي ←")}</a></div></div></div><img class="hero-photo" src="assets/clinic-consultation.png" width="668" height="760" alt="${t("A doctor listening to her patient during a consultation", "طبيبة تستمع إلى المريضة خلال الاستشارة")}" fetchpriority="high"></section>
   <section class="container landing-section how" id="how"><div class="section-heading"><h2>${t("From booking to the doctor’s screen in three steps", "من الحجز إلى شاشة الطبيب في ثلاث خطوات")}</h2></div><div class="three-grid">${[
     [
@@ -281,7 +284,7 @@ function landing() {
     .join("")}</div></section>
   <section class="container landing-section" id="services"><div class="section-heading"><h2>${t("What we treat", "تخصصاتنا")}</h2><p>${t("Pick a doctor by specialty, or leave it open and the clinic will assign one.", "اختر الطبيب حسب التخصص أو اترك الاختيار للعيادة.")}</p></div><div class="service-grid">${services}</div></section>
   <section class="container landing-section" id="visit"><div class="clinic-contact-card"><h2>${t("Find the clinic", "موقع العيادة")}</h2><div class="clinic-contact-details"><div class="contact-block"><small>${t("Address", "العنوان")}</small><p>${t("CareSlot Clinic, Building 12, Al-Rainbow Street, Jabal Amman, Amman", "عيادة كيرسلوت، مبنى ١٢، شارع الرينبو، جبل عمّان، عمّان")}</p></div><div class="contact-block"><small>${t("Opening hours", "ساعات العمل")}</small><p>${t("Sunday to Thursday, 09:00 to 17:00", "الأحد إلى الخميس، 09:00–17:00")}<br>${t("Saturday, 10:00 to 14:00", "السبت، 10:00–14:00")}<br>${t("Friday closed", "الجمعة مغلق")}</p></div><div class="contact-block"><small>${t("Phone", "الهاتف")}</small><a class="ltr" href="tel:+96265550100">+962 6 555 0100</a></div><div class="contact-block"><small>${t("Email", "البريد الإلكتروني")}</small><a href="mailto:hello@careslot.example">hello@careslot.example</a></div></div><a class="btn" href="https://www.google.com/maps/search/?api=1&query=Building%2012%20Al-Rainbow%20Street%20Jabal%20Amman%20Amman" target="_blank" rel="noopener">${t("Open address in Google Maps", "فتح العنوان في خرائط Google")}</a></div></section>
-  <section class="container landing-section"><div class="final-cta"><div><h2>${t("Your next visit starts here.", "زيارتك القادمة تبدأ هنا.")}</h2><p>${t("Choose a convenient time, verify your phone, and send your request. We’ll message you when the clinic confirms.", "اختر الوقت المناسب، وتحقق من هاتفك وأرسل طلبك. سنرسل لك رسالة عند تأكيد العيادة.")}</p><a class="btn" href="#/book/specialty">${t("Book a visit", "احجز زيارة")}</a></div><img src="assets/clinic-consultation.png" width="320" height="400" alt="${t("Care at CareSlot Clinic", "الرعاية في عيادة كيرسلوت")}" loading="lazy"></div></section></main><footer class="container site-footer"><strong>CareSlot</strong><span>${t("Amman · Sun–Thu 09:00–17:00 · Sat 10:00–14:00 · Fri closed", "عمّان · الأحد–الخميس 09:00–17:00 · السبت 10:00–14:00 · الجمعة مغلق")}</span><span>© ${new Date().getFullYear()} CareSlot · <a href="#/login">${t("Staff sign in", "دخول الموظفين")}</a></span></footer>`;
+  <section class="container landing-section"><div class="final-cta"><div><h2>${t("Your next visit starts here.", "زيارتك القادمة تبدأ هنا.")}</h2><p>${t("Choose a convenient time, verify your phone, and send your request. We’ll message you when the clinic confirms.", "اختر الوقت المناسب، وتحقق من هاتفك وأرسل طلبك. سنرسل لك رسالة عند تأكيد العيادة.")}</p><a class="btn" href="#/book/specialty">${t("Book a visit", "احجز زيارة")}</a></div><img src="assets/clinic-consultation.png" width="320" height="400" alt="${t("Care at CareSlot Clinic", "الرعاية في عيادة كيرسلوت")}" loading="lazy"></div></section></main><footer class="container site-footer"><strong>CareSlot</strong><span>${t("Amman · Sun–Thu 09:00–17:00 · Sat 10:00–14:00 · Fri closed", "عمّان · الأحد–الخميس 09:00–17:00 · السبت 10:00–14:00 · الجمعة مغلق")}</span><span>© ${new Date().getFullYear()} CareSlot ·  · </span></footer>`;
 }
 
 function specialtyPage() {
@@ -406,7 +409,7 @@ function lookupPage() {
 }
 
 function loginPage(recovery = false) {
-  return `<main class="login-page" id="main"><section class="login-visual">${brand()}<div><h1>${t("Every reservation, in one place.", "كل الحجوزات في مكان واحد.")}</h1><p>${t("Assign doctors, confirm visits and keep the clinic’s schedule under control.", "عيّن الأطباء وأكد الزيارات ونظّم جدول العيادة.")}</p><ul class="login-features">${[t("New bookings appear instantly", "الحجوزات الجديدة تظهر مباشرة"), t("Assign a doctor in one click", "تعيين الطبيب بنقرة واحدة"), t("Clear daily schedule for every doctor", "جدول يومي واضح لكل طبيب")].map((text) => `<li><img src="assets/login-dot.svg" width="10" height="10" alt="">${text}</li>`).join("")}</ul></div><a class="patient-return" href="#/">← ${t("Back to patient site", "العودة إلى موقع المرضى")}</a></section><section class="login-content"><div class="login-form"><div style="margin-bottom:32px">${languageButton()}</div><h2>${recovery ? t("Forgot your password?", "نسيت كلمة المرور؟") : t("Welcome back", "أهلاً بعودتك")}</h2><p class="muted">${recovery ? t("Enter your email to request a reset link.", "أدخل بريدك الإلكتروني لطلب رابط إعادة التعيين.") : t("Sign in to your clinic workspace.", "سجّل الدخول إلى مساحة عمل العيادة.")}</p>${recovery ? `<form id="recovery-form" class="form-stack" style="margin-top:24px">${field(t("Email address", "البريد الإلكتروني"), "email", "", 'required type="email" autocomplete="email"')}<button class="btn full" type="submit">${t("Send reset link", "إرسال رابط إعادة التعيين")}</button><a class="link" href="#/login">${t("Back to sign in", "العودة لتسجيل الدخول")}</a><div class="demo-note">${t("This frontend demonstration does not send email.", "هذه النسخة التجريبية لا ترسل بريداً إلكترونياً.")}</div></form>` : `<div class="role-buttons"><button class="btn ${session?.role === "doctor" ? "secondary" : ""}" data-action="demo-role" data-role="staff">${t("Clinic staff", "موظف العيادة")}</button><button class="btn secondary" data-action="demo-role" data-role="doctor">${t("Doctor", "طبيب")}</button></div><form id="login-form" class="form-stack">${field(t("Email address", "البريد الإلكتروني"), "email", "staff@careslot.example", 'required type="email" autocomplete="username"')}<div class="field"><label for="login-password">${t("Password", "كلمة المرور")}</label><div class="password-wrap"><input id="login-password" name="password" required type="password" autocomplete="current-password" placeholder="${t("Enter demo password", "أدخل كلمة المرور التجريبية")}"><button type="button" class="password-eye" data-action="toggle-password" aria-controls="login-password" aria-label="${t("Show password", "إظهار كلمة المرور")}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button></div></div><a class="link" href="#/forgot">${t("Forgot password?", "نسيت كلمة المرور؟")}</a>${errorBox()}<button class="btn full" type="submit">${t("Sign in", "تسجيل الدخول")}</button></form><div class="demo-note">${t("Demo access only. Use", "دخول تجريبي فقط. استخدم")} <strong>demo1234</strong>. ${t("Select a role above to fill the demo account.", "اختر الدور أعلاه لتعبئة الحساب التجريبي.")}</div>`}</div></section></main>`;
+  return `<main class="login-page" id="main"><section class="login-visual">${brand("#/")}<div><h1>${t("Every reservation, in one place.", "كل الحجوزات في مكان واحد.")}</h1><p>${t("Assign doctors, confirm visits and keep the clinic’s schedule under control.", "عيّن الأطباء وأكد الزيارات ونظّم جدول العيادة.")}</p><ul class="login-features">${[t("New bookings appear instantly", "الحجوزات الجديدة تظهر مباشرة"), t("Assign a doctor in one click", "تعيين الطبيب بنقرة واحدة"), t("Clear daily schedule for every doctor", "جدول يومي واضح لكل طبيب")].map((text) => `<li><img src="assets/login-dot.svg" width="10" height="10" alt="">${text}</li>`).join("")}</ul></div></section><section class="login-content"><div class="login-form"><div style="margin-bottom:32px">${languageButton()}</div><h2>${recovery ? t("Forgot your password?", "نسيت كلمة المرور؟") : (portal === "doctor" ? t("Doctor sign in", "دخول الطبيب") : t("Staff sign in", "دخول الموظفين"))}</h2><p class="muted">${recovery ? t("Enter your email to request a reset link.", "أدخل بريدك الإلكتروني لطلب رابط إعادة التعيين.") : t("Sign in to your clinic workspace.", "سجّل الدخول إلى مساحة عمل العيادة.")}</p>${recovery ? `<form id="recovery-form" class="form-stack" style="margin-top:24px">${field(t("Email address", "البريد الإلكتروني"), "email", "", 'required type="email" autocomplete="email"')}<button class="btn full" type="submit">${t("Send reset link", "إرسال رابط إعادة التعيين")}</button><a class="link" href="#/login">${t("Back to sign in", "العودة لتسجيل الدخول")}</a><div class="demo-note">${t("This frontend demonstration does not send email.", "هذه النسخة التجريبية لا ترسل بريداً إلكترونياً.")}</div></form>` : `<div class="role-buttons"><button class="btn secondary" data-action="demo-role" data-role="${portal}">${t("Fill demo account", "تعبئة الحساب التجريبي")}</button></div><form id="login-form" class="form-stack">${field(t("Email address", "البريد الإلكتروني"), "email", portal + "@careslot.example", 'required type="email" autocomplete="username"')}<div class="field"><label for="login-password">${t("Password", "كلمة المرور")}</label><div class="password-wrap"><input id="login-password" name="password" required type="password" autocomplete="current-password" placeholder="${t("Enter demo password", "أدخل كلمة المرور التجريبية")}"><button type="button" class="password-eye" data-action="toggle-password" aria-controls="login-password" aria-label="${t("Show password", "إظهار كلمة المرور")}"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m3 3 18 18"/></svg></button></div></div><a class="link" href="#/forgot">${t("Forgot password?", "نسيت كلمة المرور؟")}</a>${errorBox()}<button class="btn full" type="submit">${t("Sign in", "تسجيل الدخول")}</button></form><div class="demo-note">${t("Demo access only. Use", "دخول تجريبي فقط. استخدم")} <strong>demo1234</strong>. ${t("Use the demo account button to fill the form.", "استخدم زر الحساب التجريبي لتعبئة النموذج.")}</div>`}</div></section></main>`;
 }
 function workspaceShell(content, active) {
   const isDoctor = session.role === "doctor",
@@ -673,6 +676,16 @@ function render() {
     details: detailsPage,
     verify: verifyPage,
   };
+  if (portal && !["workspace", "login", "forgot"].includes(parts[0])) {
+    location.replace("#" + (session ? "/workspace/dashboard" : "/login"));
+    return;
+  }
+  if (!portal && ["workspace", "login", "forgot"].includes(parts[0])) {
+    const previousRole = getSession("careslot.auth")?.role;
+    const destination = previousRole === "doctor" ? "doctor" : "staff";
+    location.replace(destination + ".html#" + path);
+    return;
+  }
   if (path === "/") {
     app.innerHTML = landing();
     title(t("Book your next visit with ease", "احجز زيارتك القادمة بسهولة"));
@@ -949,6 +962,7 @@ function chatOptions(items) {
   return `<div class="chat-options">${items.join("")}</div>`;
 }
 function renderChat() {
+  if (portal) return;
   updateBackToTop();
   const bookingHelp = document.querySelector("#booking-help");
   if (bookingHelp) bookingHelp.innerHTML = "";
@@ -1455,7 +1469,7 @@ document.addEventListener("click", async (event) => {
         .forEach((b) => b.classList.toggle("secondary", b !== el));
     } else if (a === "logout") {
       session = null;
-      setSession("careslot.auth", null);
+      setSession(authKey, null);
       go("/login");
     } else if (a === "booking-detail") showBookingDetails(id);
     else if (a === "assign") assignModal(id);
@@ -1703,9 +1717,7 @@ document.addEventListener("submit", async (event) => {
     } else if (form.id === "login-form") {
       const email = values.email.toLowerCase();
       if (
-        !["staff@careslot.example", "doctor@careslot.example"].includes(
-          email,
-        ) ||
+        email !== portal + "@careslot.example" ||
         values.password !== "demo1234"
       )
         throw new Error(
@@ -1718,7 +1730,7 @@ document.addEventListener("submit", async (event) => {
         role: email.startsWith("doctor") ? "doctor" : "staff",
         doctorId: email.startsWith("doctor") ? "omar" : null,
       };
-      setSession("careslot.auth", session);
+      setSession(authKey, session);
       go("/workspace/dashboard");
     } else if (form.id === "recovery-form") {
       form.innerHTML =

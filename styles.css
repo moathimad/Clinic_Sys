@@ -26,6 +26,9 @@
   white-space: nowrap;
 }
 .switch-button {
+  min-width: 58px;
+  flex-shrink: 0;
+  justify-content: center;
   padding: 8px;
   border: 0;
   background: none;
@@ -34,6 +37,8 @@
   min-height: 44px;
 }
 .switch-button img {
+  flex: 0 0 42px;
+  max-width: none;
   width: 42px;
   height: 24px;
 }
